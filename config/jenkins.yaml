@@ -1,4 +1,37 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - azure:
+          azureEnvironmentName: "Azure"
+          clientId: ${AZURE_CLIENT_ID}
+          clientSecret: ${AZURE_CLIENT_SECRET}
+          id: ${AZURE_CREDENTIAL_ID}
+          scope: GLOBAL
+          subscriptionId: ${AZURE_SUBSCRIPTION_ID}
+          tenant: ${AZURE_TENANT_ID}
 jenkins:
+  clouds:
+  - aci:
+      credentialsId: ${AZURE_CREDENTIAL_ID}
+      name: "azure-container-instances"
+      resourceGroup: "jenkins-azure-container-agents-try"
+      templates:
+      - command: "jenkins-agent -url ^${rootUrl} ^${secret} ^${nodeName}"
+        cpu: "1"
+        image: "jenkins/inbound-agent"
+        label: "hello-world"
+        memory: "1.5"
+        name: "Linux"
+        osType: "Linux"
+        retentionStrategy: "containerOnce"
+        rootFs: "/home/jenkins"
+        timeout: 10
+  labelAtoms:
+  - name: "built-in"
+  - name: "never-use"
+  labelString: "never-use"
+  numExecutors: 0
   systemMessage: "This is a demo Jenkins instance configured with Jenkins Configuration as Code."
   disabledAdministrativeMonitors:
     - "jenkins.diagnostics.ControllerExecutorsNoAgents"
@@ -26,7 +59,7 @@ security:
     useScriptSecurity: true
   scriptApproval:
     approvedScriptHashes:
-    - "SHA512:fa7ef3a8989433b2695771a3363c1c03547c0b8669847a41609af6df19c4e8ef75ab65038492aeb335719dbd5ff6bf6a3dc398153f7d96c6705bcc9b0494eea1"
+    - "SHA512:c71afbdd03cd75c835c91b74fc8b54e09ce45a5c30d8bce186830ed43f5e9e956620ef6af666a0abe1f2aba97b0e26aa454d43d8a4c870fe06e4d00ffed04bad"
 unclassified:
   location:
     adminAddress: ${JENKINS_ADMIN_EMAIL}
@@ -43,7 +76,7 @@ jobs:
           cps {
             script("""\
               pipeline {
-                agent any
+                agent { label 'hello-world' }
                 stages {
                   stage ('test') {
                     steps {
